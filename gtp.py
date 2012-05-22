@@ -58,18 +58,18 @@ class GTP(object):
         '''
         Constructor
         '''
-        self.logger = None
-        self.engine = None
+        self._logger = None
+        self._engine = None
         self.testout_only = False # dont output anything to screen except test info
-        self.in_file = in_file
+        self._in_file = in_file
     
     def get_line(self):
         ''' get line from stdin, using fancy pants generator approach. '''
         while True:
-            line = self.in_file.readline()
+            line = self._in_file.readline()
             if not line:
                 return
-            self.logger.log_cmd(line)
+            self._logger.log_cmd(line)
             
             line = line.strip()
             pound = line.find('#')
@@ -92,7 +92,7 @@ class GTP(object):
     
     def send_success(self, id, response):
         ''' write 'id, response' to stdout. '''
-        if self.logger.testout_only:
+        if self._logger.testout_only:
             return
 
         s = ""
@@ -108,13 +108,13 @@ class GTP(object):
             else:
                 s = '=\n\n'
 
-        self.logger.log_comment(s)
+        self._logger.log_comment(s)
         sys.stdout.write(s)
         sys.stdout.flush()
     
     def send_failure(self, id, error):
         ''' write 'ID, error' to stdout.'''
-        if self.logger.testout_only:
+        if self._logger.testout_only:
             return
         s = ''
         if id is not None:
@@ -123,7 +123,7 @@ class GTP(object):
             s = '? %s\n\n' % (error,)
 
         sys.stdout.write(s)
-        self.logger.log_comment(s)
+        self._logger.log_comment(s)
     
     def call_func(self, obj, name, args):
         ''' call a function called "name" on obj and return some response. '''
@@ -143,17 +143,22 @@ class GTP(object):
         else:
             return str(info[1])
     
-    # TODO: i hate getter/setters - use the python convention here
+    
     def set_engine(self, engine):
-        self.engine = engine
+        self._engine = engine
     def set_logger(self, logger):
-        self.logger = logger
-        
+        self._logger = logger
+    def get_engine(self):
+        return self._engine
+    def get_logger(self):
+        return self._logger
+    engine = property(get_engine, set_engine)
+    logger = property(get_logger, set_logger)
     ''' ------------------------------------------------------------------- ''' 
     ''' GTP commands the parser implements itself...'''
     ''' ------------------------------------------------------------------- ''' 
     def list_commands(self):
-        members = dir(self.engine)
+        members = dir(self._engine)
         commands = ""
         for member in members:
             if not member.startswith('_'):
@@ -179,7 +184,7 @@ class GTP(object):
                 self.send_failure(id, error)
 
         # no ... does the engine implement it?
-        elif hasattr(self.engine, cmd):
+        elif hasattr(self._engine, cmd):
             # TODO: wrap these lines in a try/catch block ...
             try:
                 # try run the command and get response
@@ -192,7 +197,7 @@ class GTP(object):
             self.send_failure(id, "unknown command")
 
     def run(self):
-        if self.engine is None or self.in_file is None:
+        if self._engine is None or self._in_file is None:
             raise Exception("engine or in_file not set")
         
         commands = self.list_commands()

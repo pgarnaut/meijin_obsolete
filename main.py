@@ -1,13 +1,13 @@
 '''
-Entry point.
-
-
-
+Entry point - creates players, board, engine and gtp parser.
 
 
 NOTES:
 throughout code, black = 1, white = 2, empty = 3
-all coordinates are 1-based
+all coordinates are 1-based, where coordinates = (column, row) 
+
+TODO: when run in --engine mode, set both players to be the AI player, that way any
+genmove <colour> command will behave as expected.
 '''
 
 import sys
@@ -68,11 +68,12 @@ if __name__ == '__main__':
     gtp = GTP(in_file)
     
     # attach everything
-    engine.set_board(board)
+    engine.board = board
     engine.set_players(p1, p2)
-    engine.set_logger(logger)
-    p1.set_engine(engine)
-    p2.set_engine(engine)
+    engine.logger = logger
+    p1.engine = engine
+    p2.engine = engine
+    
     gtp.set_engine(engine)
     gtp.set_logger(logger)
         

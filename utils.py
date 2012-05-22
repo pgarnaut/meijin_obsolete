@@ -1,6 +1,5 @@
 '''
     utils.py - tools/utilities for go engine
-
 '''
 
 import board

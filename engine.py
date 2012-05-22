@@ -1,14 +1,9 @@
 '''
-Implements the GTP commands and also does the thinking.
-
-
+Implements the GTP commands and stores the state of the game.
 '''
-import gtp
-import random
 import sys
-import monkey
-from gtp import Logger
 from utils import Utils
+
 move_list = [] # cant even remember what iwas doing with this ...
 
 class Engine(object):
@@ -19,13 +14,14 @@ class Engine(object):
         '''
         Constructor
         '''
-        self.logger = None
+        self._logger = None
+        self._board = None
         self.validity_test_id = 0
         self.validity_testing = False
         self.validity_test_last_result = 0
         self.validity_test_results = []
         self.temp_test_move_list = [(1,1), (2,2), (5,5), (9,9)]
-        self.board_size = 9
+        
         
    
     # ---------------------------
@@ -33,33 +29,34 @@ class Engine(object):
     # ---------------------------
     
     def boardsize(self, size):
-        self.board.resize(int(size))
+        ''' set the board size. '''
+        self._board.resize(int(size))
 
     def clear_board(self):
-        self.board.reset()
+        self._board.reset()
         # TODO: reset other state stuff here if necessary
 
     def komi(self, value):
         pass
 
     def play(self, color, vertex):
-        vertex = Utils.parse_vertex(vertex, self.getBoardSize()) # may be None
+        vertex = Utils.parse_vertex(vertex, self._board.size) # may be None
         color = 1 if color[0].lower() == 'b' else 2
         #if self.board[vertex] != 3: # must be empty square
         #    raise Exception('illegal move')
         captures = []
         
         # check the validity of the move and determine any resulting captures
-        self.validity_test_last_result = Utils.check_move(self.board, vertex, color, captures)
+        self.validity_test_last_result = Utils.check_move(self._board, vertex, color, captures)
         
         if not self.validity_test_last_result:
             raise Exception("you played an invalid move")
         
         # place the stone
-        self.board.set_stone(vertex, color)
+        self._board.set_stone(vertex, color)
         
         # apply any resulting captures 
-        self.board.remove_stones(captures)
+        self._board.remove_stones(captures)
         
         #    def undo(self):
         #    pass
@@ -73,21 +70,22 @@ class Engine(object):
         captures = [] 
 
         # player should not generate an invalid move ...
-        if not Utils.check_move(self.board, move, colour, captures):
+        if not Utils.check_move(self._board, move, colour, captures):
             raise Exception("player " +Utils.make_colour(colour) + " generated an invalid move")
             
         # apply move to the board TODO: keep score here ...
-        self.board.set_stone(move, colour)
-        self.board.remove_stones(captures)
+        self._board.set_stone(move, colour)
+        self._board.remove_stones(captures)
 
         # make GTP result string ...
-        return Utils.make_vertex(move[0], move[1], self.board.size)
+        return Utils.make_vertex(move[0], move[1], self._board.size)
     
     def quit(self):
         sys.exit(0)
     
     def showboard(self):
-        self.logger.logConsole(str(self.board))
+        ''' print board to stdout. '''
+        self._logger.logConsole(str(self._board))
     
     def name(self):
         return "meijin"
@@ -95,20 +93,25 @@ class Engine(object):
     # ---------------------------
     # non gtp interface functions
     # ---------------------------
-    def getBoardSize(self): # TODO:
-        return self.board.size
-    
+
     def set_logger(self, logger):
-        self.logger = logger
+        self._logger = logger
         Utils.set_logger(logger)
+    
+    def get_logger(self):
+        return self._logger
+    
+    logger = property(get_logger, set_logger)
         
     def set_board(self, board):
-        self.board = board
+        self._board = board
     
     def get_board(self):
         ''' get the current board.'''
         '''inefficient but the dup here prevents accidental modification of my board instnace.'''
-        return self.board.dup()
+        return self._board.dup()
+
+    board = property(get_board, set_board)
 
     def set_players(self, p1, p2):
         self.players = [p1, p2]
@@ -126,11 +129,11 @@ class Engine(object):
     
     def print_validity_test_results(self):
         for id,result in self.validity_test_results:
-            self.logger.logTestout("["+ str(id)+"] ")
+            self._logger.logTestout("["+ str(id)+"] ")
             if result:
-                self.logger.logTestout("PASS\n")
+                self._logger.logTestout("PASS\n")
             else:
-                self.logger.logTestout("FAIL\n")
+                self._logger.logTestout("FAIL\n")
     
     def set_testout_only(self):
-        self.logger.set_testout_only()
+        self._logger.set_testout_only()
