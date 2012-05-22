@@ -1,0 +1,13 @@
+name
+protocol_version
+version
+list_commands
+boardsize 9
+clear_board
+play B E5
+genmove w
+play B E4
+genmove w
+play B G3
+genmove w
+play B H4

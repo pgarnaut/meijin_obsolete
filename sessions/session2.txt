@@ -1,0 +1,17 @@
+1 boardsize 7
+
+2 clear_board
+
+3 play black D5
+
+4 genmove white
+
+5 play black C3
+
+6 play black E3
+
+7 play black D5
+
+8 showboard
+
+9 quit

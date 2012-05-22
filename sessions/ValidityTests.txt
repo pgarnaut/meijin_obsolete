@@ -1,0 +1,183 @@
+boardsize 9
+# set_testout_only
+
+# -----------------------------------------------------------------------------
+# test 1 - invalid
+# -----------------------------------------------------------------------------
+clear_board
+
+start_validity_test 1
+
+play W B1
+play W A2
+play B A1
+
+check_validity_test 0 
+
+showboard
+
+# -----------------------------------------------------------------------------
+# test 2 - invalid
+# -----------------------------------------------------------------------------
+clear_board
+
+start_validity_test 2 
+
+play W D1
+play W E2
+play W E3
+play W C2
+play W C3
+play W D4
+
+play B D2
+play B D3
+
+check_validity_test 0 
+showboard
+
+
+# -----------------------------------------------------------------------------
+# test 3 - invalid
+# -----------------------------------------------------------------------------
+clear_board
+
+start_validity_test 3
+
+play W D1
+play W C2
+play W E2
+play W D3
+play B D2
+
+check_validity_test 0 
+showboard
+
+# -----------------------------------------------------------------------------
+# test 4 - valid
+# -----------------------------------------------------------------------------
+clear_board
+
+start_validity_test 4
+
+play W C1
+play W B2
+play W B3
+play W D2
+play W D3
+play B C3
+play B C2
+
+check_validity_test 1 
+showboard
+
+# -----------------------------------------------------------------------------
+# test 5 - valid
+# -----------------------------------------------------------------------------
+clear_board
+
+start_validity_test 5
+
+play W C2
+play W B3
+play W D3
+play B C3
+
+check_validity_test 1 
+showboard
+
+# -----------------------------------------------------------------------------
+# test 6 - valid
+# -----------------------------------------------------------------------------
+clear_board
+
+start_validity_test 6
+
+play W A1
+play W B2
+play W A3
+play B B1
+play B A2
+
+check_validity_test 1 
+showboard
+
+# -----------------------------------------------------------------------------
+# test 7 - valid
+# -----------------------------------------------------------------------------
+clear_board
+
+start_validity_test 7
+
+play W G1
+play W G2
+play W G3
+play W G4
+play W I2
+play W I3
+play W I4
+play W H5
+play B H1
+play B I1
+play B H3
+play B H4
+play B I5
+play B H2
+
+check_validity_test 1 
+showboard
+
+# -----------------------------------------------------------------------------
+# test 8 - valid
+# -----------------------------------------------------------------------------
+clear_board
+
+start_validity_test 8
+
+play W C2
+play W D2
+play W B3
+play W E3
+play W C4
+play W E4
+play W C5
+play W D5
+play B C3
+play B B4
+play B B5
+play B E5
+play B C6
+play B D6
+play B D3
+play B D4
+check_validity_test 1 
+showboard
+
+# -----------------------------------------------------------------------------
+# test 9 - invalid
+# -----------------------------------------------------------------------------
+clear_board
+
+start_validity_test 9
+
+play W C2
+play W D2
+play W B3
+play W E3
+play W C4
+play W E4
+play W C5
+play W D5
+play B C3
+play B B4
+play B E5
+play B C6
+play B D6
+play B D3
+play B D4
+check_validity_test 0
+showboard
+
+
+
+print_validity_test_results
