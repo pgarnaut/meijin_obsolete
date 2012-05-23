@@ -46,11 +46,15 @@ class Engine(object):
         #    raise Exception('illegal move')
         captures = []
         
+        self.validity_test_last_result = Utils.valid_coord(vertex, self.board.size)
+        
         # check the validity of the move and determine any resulting captures
-        self.validity_test_last_result = Utils.check_move(self._board, vertex, color, captures)
+        self.validity_test_last_result = \
+                        self.validity_test_last_result and \
+                        Utils.check_move(self._board, vertex, color, captures)
         
         if not self.validity_test_last_result:
-            raise Exception("you played an invalid move")
+            raise Exception("you played an invalid move: " + str(color) + " " + str(vertex))
         
         # place the stone
         self._board.set_stone(vertex, color)

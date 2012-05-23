@@ -44,6 +44,9 @@ class Player(object):
                     empty.append((c,r))
         for p in empty:
             if Utils.check_move(b, p, self.colour, []):
+                if p[0] == 8 and p[1] == 1:
+                    self._logger.log_comment("H1 is valid")
+                    self._logger.log_comment(str(b))
                 return p   
         return None 
 

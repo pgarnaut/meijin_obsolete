@@ -95,7 +95,7 @@ class Board():
     def __str__(self):
         ''' string representation of the board. '''
         # those pretty little markers at certain points ... use permutations with replacement
-        markers = {9 : [k for k in itertools.product([3,6], repeat=2)], 
+        markers = {9 : [k for k in itertools.product([3,7], repeat=2)], 
                    13: [k for k in itertools.product([4,10], repeat=2)], 
                    19: [k for k in itertools.product([4,10,16], repeat=2)]}
 

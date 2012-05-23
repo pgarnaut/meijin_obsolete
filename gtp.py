@@ -54,12 +54,12 @@ class GTP(object):
     '''
 
 
-    def __init__(self, in_file):
+    def __init__(self, engine, logger, in_file=sys.stdin):
         '''
         Constructor
         '''
-        self._logger = None
-        self._engine = None
+        self._logger = logger
+        self._engine = engine
         self.testout_only = False # dont output anything to screen except test info
         self._in_file = in_file
     
@@ -78,60 +78,60 @@ class GTP(object):
             if line:
                 yield line
     
-    def parse_command(self, line):
+    def parse_line(self, line):
         words = line.split()
         if words[0].isdigit():
-            id = words[0]
+            id_ = words[0]
             command = words[1]
             args = words[2:]
         else:
-            id = None
+            id_ = None
             command = words[0]
             args = words[1:]
-        return id, command, args
+        return id_, command, args
     
-    def send_success(self, id, response):
-        ''' write 'id, response' to stdout. '''
+    def build_failure_str(self, id_, error):
         if self._logger.testout_only:
             return
+        s = ''
+        if id_ is not None:
+            s = '?%s %s\n\n' % (id_, error)
+        else:
+            s = '? %s\n\n' % (error,)
 
+        #sys.stdout.write(s)
+        #self._logger.log_comment(s)
+        return s
+    
+    def build_happy_str(self, id_, response):
+        ''' write 'id, response' to stdout. '''
         s = ""
 
-        if id is not None:
+        if id_ is not None:
             if response is not None:
-                s = '=%s %s\n\n' % (id, response)
+                s = '=%s %s\n\n' % (id_, response)
             else:
-                s = '=%s\n\n' % (id,)
+                s = '=%s\n\n' % (id_,)
         else:
             if response is not None:
                 s = '= %s\n\n' % (response,)
             else:
                 s = '=\n\n'
 
-        self._logger.log_comment(s)
-        sys.stdout.write(s)
-        sys.stdout.flush()
-    
-    def send_failure(self, id, error):
-        ''' write 'ID, error' to stdout.'''
-        if self._logger.testout_only:
-            return
-        s = ''
-        if id is not None:
-            s = '?%s %s\n\n' % (id, error)
-        else:
-            s = '? %s\n\n' % (error,)
-
-        sys.stdout.write(s)
-        self._logger.log_comment(s)
-    
-    def call_func(self, obj, name, args):
+        return s
+        
+    def call_func(self, obj, id_, name, args):
         ''' call a function called "name" on obj and return some response. '''
         member = getattr(obj, name)
+        response = member #default
         if callable(member):
-            return member(*args)
-        else:
-            return member
+            try:
+                response = self.build_happy_str(id_, member(*args))
+            except Exception:
+                response = self.build_failure_str(id_, self.get_error_str())
+        
+        return response
+        
     
     def get_error_str(self):
         ''' get error string from an exception. '''
@@ -143,17 +143,18 @@ class GTP(object):
         else:
             return str(info[1])
     
-    
-    def set_engine(self, engine):
-        self._engine = engine
-    def set_logger(self, logger):
-        self._logger = logger
-    def get_engine(self):
+    def write_response(self, s):
+        sys.stdout.write(s)
+        sys.stdout.flush()
+        self._logger.log_comment(s)
+        
+    @property
+    def engine(self):
         return self._engine
-    def get_logger(self):
+    @property
+    def logger(self):
         return self._logger
-    engine = property(get_engine, set_engine)
-    logger = property(get_logger, set_logger)
+
     ''' ------------------------------------------------------------------- ''' 
     ''' GTP commands the parser implements itself...'''
     ''' ------------------------------------------------------------------- ''' 
@@ -171,42 +172,30 @@ class GTP(object):
     def version(self):
         return "0.0"
     ''' ------------------------------------------------------------------- ''' 
-       
-    def exec_line(self, id, cmd, args):
+        
+    def exec_line(self, id_, cmd, args):
         ''' run cmd on some object - engine,gtp-parser,etc.'''
+        
         # do I implement this command?
         if hasattr(self, cmd):
-            try:
-                response = self.call_func(self, cmd, args)
-                self.send_success(id, response)
-            except Exception:
-                error = self.get_error_str()
-                self.send_failure(id, error)
+            response = self.call_func(self, id_, cmd, args)
+            #self._logger.log_comment(response)
+            self.write_response(response)
 
         # no ... does the engine implement it?
         elif hasattr(self._engine, cmd):
-            # TODO: wrap these lines in a try/catch block ...
-            try:
-                # try run the command and get response
-                response = self.call_func(self.engine, cmd, args)
-                self.send_success(id, response)
-            except Exception:
-                error = self.get_error_str()
-                self.send_failure(id, error)
+            response = self.call_func(self.engine, id_, cmd, args)
+            self.write_response(response)
+            
         else:
-            self.send_failure(id, "unknown command")
+            self.write_response(self.build_failure_str(id_, "unknown command"))
+            
 
-    def run(self):
-        if self._engine is None or self._in_file is None:
-            raise Exception("engine or in_file not set")
-        
-        commands = self.list_commands()
-        quit = False
-        
+    def run(self):        
         for line in self.get_line():
-            id, command, args = self.parse_command(line)
+            id_, command, args = self.parse_line(line)
             if command == 'quit':
                 break
             else:
-                self.exec_line(id, command, args)
+                self.exec_line(id_, command, args)
 

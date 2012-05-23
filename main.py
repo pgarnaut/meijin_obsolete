@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 Entry point - creates players, board, engine and gtp parser.
 
@@ -9,7 +10,6 @@ all coordinates are 1-based, where coordinates = (column, row)
 TODO: when run in --engine mode, set both players to be the AI player, that way any
 genmove <colour> command will behave as expected.
 '''
-
 import sys
 from engine import Engine
 from player import Player
@@ -17,12 +17,7 @@ from monkey import Monkey, Human
 from gtp import GTP, Logger
 from board import Board
 
-''' 
-TODO: need options:
---human : gtp like mode
---engine : act like an engine for a gui 
---test : read session file from disk
-'''
+
 usage_str = """
 python main.py <options>
 --human
@@ -31,7 +26,7 @@ python main.py <options>
 """
 
 def usage():
-    w = sys.stderr.write(usage_str)
+    sys.stderr.write(usage_str)
     sys.exit(1)
 
 if __name__ == '__main__':
@@ -57,15 +52,15 @@ if __name__ == '__main__':
     # create players
     p1 = (Human(1) if do_human else Player(1))
     p2 = Monkey(2) # AI - can do play_move() and gen_move()
+    p1.logger = logger
+    p2.logger = logger
+    
     
     # create engine
     engine = Engine()
     
-    # create board of default size 9
-    board = Board(9)
-    
-    # create gtp_parser
-    gtp = GTP(in_file)
+    # create board of default size 19
+    board = Board(19)
     
     # attach everything
     engine.board = board
@@ -74,8 +69,8 @@ if __name__ == '__main__':
     p1.engine = engine
     p2.engine = engine
     
-    gtp.set_engine(engine)
-    gtp.set_logger(logger)
+    # create gtp_parser
+    gtp = GTP(engine, logger, in_file)
         
     # start reading commands from in_file 
     if not do_human:
@@ -84,6 +79,6 @@ if __name__ == '__main__':
         players = ["black", "white"]
         p = 0
         while True:
-           engine.showboard()
-           engine.genmove(players[p])
-           p = (p + 1) % 2
+            engine.showboard()
+            engine.genmove(players[p])
+            p = (p + 1) % 2

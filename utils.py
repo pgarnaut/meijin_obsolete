@@ -142,6 +142,9 @@ class Utils(object):
         # dont want to mung up the actual board maintianed by the engine
         board = board.dup() 
 
+        if not Utils.valid_coord(vertex, board.size):
+            return False
+            
         # non empty square?
         if board[vertex].colour != 3:
             return False
@@ -164,8 +167,3 @@ class Utils(object):
         else:
             return False
             
-#captures()
-#neighbors()
-#enemies()
-#etc. - refer to monkey.py
-# make sure to dup the board before doing anything

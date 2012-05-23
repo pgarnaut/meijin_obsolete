@@ -14,7 +14,7 @@ class Human(Player):
     def genmove(self):
         ''' politely ask user for a move. '''
         
-        size = self.engine.get_board().get_size()
+        size = self.engine.board.size
         move = None
         while True:
             print("move:")
@@ -23,7 +23,7 @@ class Human(Player):
                 sys.exit(0)
             
             move = Utils.parse_vertex(move, size)
-            if Utils.valid_coord(move, size) and Utils.check_move(self.engine.get_board(), move, self.colour, []):
+            if Utils.valid_coord(move, size) and Utils.check_move(self.engine.board, move, self.colour, []):
                 break
             else:
                 print("invalid move")
@@ -39,7 +39,7 @@ class Monkey(Player):
 
 
     def genmove(self):
-        b = self.engine.get_board()
+        b = self.engine.board
         size = b.size
         empty = []
         for c in range(1, size+1):
