@@ -18,7 +18,7 @@ GTP:
 
 Other:
 * http://en.wikipedia.org/wiki/Computer_Go
-
+* 
 
 Overview of code:
 -----------------

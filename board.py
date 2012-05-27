@@ -49,7 +49,8 @@ class Square():
     def __init__(self):
         self._colour = 3 
         self.visited = False
-        self.liberties = 0 
+        self.l = 0 # liberty count 
+        self.i = 0 # influence value
     
     def set_colour(self, colour):
         self._colour = colour
@@ -64,7 +65,8 @@ class Square():
         tmp = Square()
         tmp._colour = self._colour
         tmp._visited = self.visited
-        tmp.liberties = self.liberties
+        tmp.l = self.l
+        tmp.i = self.i
         return tmp
 
     def __str__(self):

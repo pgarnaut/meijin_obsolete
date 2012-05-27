@@ -3,7 +3,6 @@ Implements the GTP commands and stores the state of the game.
 '''
 import sys
 from utils import Utils
-
 move_list = [] # cant even remember what iwas doing with this ...
 
 class Engine(object):
@@ -20,7 +19,6 @@ class Engine(object):
         self.validity_testing = False
         self.validity_test_last_result = 0
         self.validity_test_results = []
-        self.temp_test_move_list = [(1,1), (2,2), (5,5), (9,9)]
         
         
    
@@ -62,6 +60,12 @@ class Engine(object):
         # apply any resulting captures 
         self._board.remove_stones(captures)
         
+        # apply influence values to board squares 
+        Utils.calc_influence(self._board)
+        
+        self.players[0].play(vertex, color)
+        self.players[1].play(vertex, color)
+        
         #    def undo(self):
         #    pass
 
@@ -75,14 +79,24 @@ class Engine(object):
 
         # player should not generate an invalid move ...
         if not Utils.check_move(self._board, move, colour, captures):
-            raise Exception("player " +Utils.make_colour(colour) + " generated an invalid move")
+            raise Exception("player " + Utils.make_colour(colour) + " generated an invalid move")
             
         # apply move to the board TODO: keep score here ...
         self._board.set_stone(move, colour)
         self._board.remove_stones(captures)
+        
+        # apply influence values to board squares ...
+        Utils.calc_influence(self._board)
+        
+        
+        self.players[0].play(move, colour)
+        self.players[1].play(move, colour)
 
         # make GTP result string ...
         return Utils.make_vertex(move[0], move[1], self._board.size)
+    
+    def show_influence(self):
+        return Utils.print_influence(self._board)
     
     def quit(self):
         sys.exit(0)
@@ -111,9 +125,9 @@ class Engine(object):
         self._board = board
     
     def get_board(self):
-        ''' get the current board.'''
-        '''inefficient but the dup here prevents accidental modification of my board instnace.'''
-        return self._board.dup()
+        ''' get a clone of the current board.'''
+        '''inefficient but the dup here prevents accidental modification of my board instance.'''
+        return self._board #.dup()
 
     board = property(get_board, set_board)
 
@@ -132,7 +146,7 @@ class Engine(object):
             self.validity_test_results.append((self.validity_test_id, False))
     
     def print_validity_test_results(self):
-        for id,result in self.validity_test_results:
+        for id_, result in self.validity_test_results:
             self._logger.logTestout("["+ str(id)+"] ")
             if result:
                 self._logger.logTestout("PASS\n")

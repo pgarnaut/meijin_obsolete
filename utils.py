@@ -5,7 +5,8 @@
 import board
 import engine
 import sys
-
+import itertools
+import math
 
 class Utils(object):
     '''
@@ -42,7 +43,7 @@ class Utils(object):
     def make_vertex(col, row, boardsize):
         ''' turn col,row such as 2,19 into string "B19".'''
         if col >= 9:
-            col -= 1 # GTP coordinates skip the letter 'I'
+            col += 1 # GTP coordinates skip the letter 'I'
         number = str(row)
         letter = chr(col + ord('a') - 1)
         return letter + number
@@ -166,4 +167,52 @@ class Utils(object):
             return True
         else:
             return False
+          
+    @staticmethod  
+    def print_influence(g):
+        
+        for row in range(g.size):
+            for col in range(g.size):
+                if g[col,row].i > 0:
+                    sys.stdout.write("+")
+                elif g[col,row].i < 0:
+                    sys.stdout.write("-")
+                else:
+                    sys.stdout.write(" ")
+            sys.stdout.write("\n")
             
+    @staticmethod
+    def influence_propogation(v):
+        return math.floor(60 / (1 + v[0]**2 + v[1]**2))
+  
+    @staticmethod  
+    def calc_influence(b):
+        ''' Will overwrite existing influence values in board. '''
+        # TODO: implement an "update_influence" function - will be more efficient
+        
+        # reset influence
+        for row in range(b.size):
+            for col in range(b.size):
+                b[col,row].i = 0
+        
+        # the directions/distances and strength of propagation        
+        mat = dict()
+        for k in itertools.product(range(-3, 3), repeat=2):
+            mat[k] = Utils.influence_propogation(k)
+            
+        # foreach square in board
+        for row in range(b.size):
+            for col in range(b.size):
+                modifier =  1
+                if b[col,row].colour == 2:
+                    modifier = -1
+                elif b[col,row].colour == 3: 
+                    modifier = 0
+                
+                # foreach square we apply influence to from here ...
+                for dP in mat.keys():
+                    p = (col + dP[0], row + dP[1])
+                    
+                    if Utils.valid_coord(p, b.size):
+                        b[p].i += modifier * mat[dP]
+    
