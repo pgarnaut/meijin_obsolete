@@ -3,7 +3,12 @@ Implements the GTP commands and stores the state of the game.
 '''
 import sys
 from utils import Utils
-move_list = [] # cant even remember what iwas doing with this ...
+
+class Move(object):
+    def __init__(self, p, c, caps):
+        self.p = p # position
+        self.c = c # colour
+        self.caps = caps # captures, list of coordinate tuples
 
 class Engine(object):
     '''
@@ -15,11 +20,16 @@ class Engine(object):
         '''
         self._logger = None
         self._board = None
+        self._players = []
+        
         self.validity_test_id = 0
         self.validity_testing = False
         self.validity_test_last_result = 0
         self.validity_test_results = []
         
+        # game state
+        self._captures = [0, 0]
+        self._moves = []
         
    
     # ---------------------------
@@ -40,8 +50,21 @@ class Engine(object):
     def play(self, color, vertex):
         vertex = Utils.parse_vertex(vertex, self._board.size) # may be None
         color = 1 if color[0].lower() == 'b' else 2
-        #if self.board[vertex] != 3: # must be empty square
-        #    raise Exception('illegal move')
+        self.apply_move(vertex, color)
+
+    def genmove(self, colour):
+        ''' Ask the appropriate player to generate a move. '''
+        colour = Utils.parse_colour(colour)
+        
+        # generate move
+        move = self._players[colour - 1].genmove()
+        
+        self.apply_move(move, colour)
+        # make GTP result string ...
+        return Utils.make_vertex(move[0], move[1], self._board.size)
+    
+    def apply_move(self, vertex, colour):
+        ''' apply move to engine (and players). '''
         captures = []
         
         self.validity_test_last_result = Utils.valid_coord(vertex, self.board.size)
@@ -49,13 +72,15 @@ class Engine(object):
         # check the validity of the move and determine any resulting captures
         self.validity_test_last_result = \
                         self.validity_test_last_result and \
-                        Utils.check_move(self._board, vertex, color, captures)
+                        Utils.check_move(self._board, vertex, colour, captures)
         
         if not self.validity_test_last_result:
-            raise Exception("you played an invalid move: " + str(color) + " " + str(vertex))
+            raise Exception("you played an invalid move: " + str(colour) + " " + str(vertex))
+        
+        self._moves.append(Move(vertex, colour, captures))
         
         # place the stone
-        self._board.set_stone(vertex, color)
+        self._board.set_stone(vertex, colour)
         
         # apply any resulting captures 
         self._board.remove_stones(captures)
@@ -63,37 +88,9 @@ class Engine(object):
         # apply influence values to board squares 
         Utils.calc_influence(self._board)
         
-        self.players[0].play(vertex, color)
-        self.players[1].play(vertex, color)
+        self._players[0].play(vertex, colour)
+        self._players[1].play(vertex, colour)
         
-        #    def undo(self):
-        #    pass
-
-    def genmove(self, colour):
-        ''' Ask the appropriate player to generate a move. '''
-        colour = Utils.parse_colour(colour)
-        
-        # generate move
-        move = self.players[colour - 1].genmove()
-        captures = [] 
-
-        # player should not generate an invalid move ...
-        if not Utils.check_move(self._board, move, colour, captures):
-            raise Exception("player " + Utils.make_colour(colour) + " generated an invalid move")
-            
-        # apply move to the board TODO: keep score here ...
-        self._board.set_stone(move, colour)
-        self._board.remove_stones(captures)
-        
-        # apply influence values to board squares ...
-        Utils.calc_influence(self._board)
-        
-        
-        self.players[0].play(move, colour)
-        self.players[1].play(move, colour)
-
-        # make GTP result string ...
-        return Utils.make_vertex(move[0], move[1], self._board.size)
     
     def show_influence(self):
         return Utils.print_influence(self._board)
@@ -131,8 +128,22 @@ class Engine(object):
 
     board = property(get_board, set_board)
 
+
+
     def set_players(self, p1, p2):
-        self.players = [p1, p2]
+        self._players = [p1, p2]
+
+    def undo(self):
+        m = self._moves.pop()
+        enemy_colour = (1 if m.c == 2 else 2)
+        # remove the stone that was placed
+        self._board.set_stone(m.p, 3)
+        # replace captured stones
+        for c in m.caps:
+            self._board.set_stone(c, enemy_colour)
+        # tell players to update their state
+        for p in self._players:
+            p.undo()
         
     def start_validity_test(self, id):
         self.validity_test_id = int(id)

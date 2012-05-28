@@ -51,7 +51,11 @@ class Player(object):
         ''' notify me that a certain player (potentially myself) has played a particular move. '''
         ''' pos is a tuple of coordinates - one based. colour: 1 is black, 2 is white. '''
         pass
-
+    
+    def undo(self):
+        ''' notify me that the last move applied to engine has been undone.'''
+        pass
+    
     def reset(self):
         ''' notify me that game/board/engine/etc. has been reset, so i can reset any state i kept. '''
         pass
