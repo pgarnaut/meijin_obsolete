@@ -1,3 +1,8 @@
+Meijin - a computer go engine
+
+Please refer to https://github.com/patmanpato/meijin/wiki
+
+
 Running:
 --------
 with a gui client (tested with GoGui on windows and linux), use the command:
@@ -21,11 +26,10 @@ Other:
 * 
 
 Overview of code:
------------------
+--
 Control flow should look something like this. No idea if it currently does!
 
 main.py:
---------
 This just initialises eveything for the first time
 
 * create engine
@@ -48,14 +52,12 @@ This just initialises eveything for the first time
 
 
 gtp.py:
--------
 This reads a line from a file, and calls engine.run("command read from file") {basically...}
 Also provides a logger, and may implement some extensions to the GTP protocol, 
 eg: testing functions, that the engine doesnt really want to know about (for simplicity).
 
 
 engine.py:
-----------
 implements the gtp functions, eg: set boardsize, 
 clear_board, playmove <colour> <position>, genmove <colour>, show_board, etc. etc.
 
@@ -67,7 +69,6 @@ and maybe things like ...
 
 
 board.py:
----------
 just stores the state, and nothing more. Dont check the validy of moves applied to the board. 
 Eg. set_move(colour, position) will just overwrite anything there ....
 
@@ -75,7 +76,6 @@ players should call engine.get_board_state(), the engine then calls my_board_ptr
 
 
 player.py:
-----------
 interface definition for players (AI and human).
 should have the functions 
 * genmove() <-- generate a move if applicable  (can return null?)
@@ -83,5 +83,4 @@ should have the functions
 etc. etc.
 
 monkey.py:
-----------
 an AI player implementation ...
