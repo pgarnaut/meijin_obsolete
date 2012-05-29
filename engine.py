@@ -27,8 +27,9 @@ class Engine(object):
         self.validity_test_last_result = 0
         self.validity_test_results = []
         
-        # game state
-        self._captures = [0, 0]
+        # number of captured stones (not the positions of captures)
+        self._captures = [0, 0] 
+        # list of Move objects
         self._moves = []
         
    
@@ -93,14 +94,14 @@ class Engine(object):
         
     
     def show_influence(self):
-        return Utils.print_influence(self._board)
+        return Utils.show_influence(self._board)
     
     def quit(self):
         sys.exit(0)
     
     def showboard(self):
         ''' print board to stdout. '''
-        self._logger.logConsole(str(self._board))
+        self._logger.log_console(str(self._board))
     
     def name(self):
         return "meijin"

@@ -39,7 +39,7 @@ class Logger(object):
     def logTestout(self, s):
         sys.stderr.write(s)
         
-    def logConsole(self, s):
+    def log_console(self, s):
         if not self.testout_only:
             sys.stderr.write(s)
     

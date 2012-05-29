@@ -17,7 +17,7 @@ class Utils(object):
 
     @staticmethod
     def set_logger(dbg_logger):
-        logger = dbg_logger
+        Utils.logger = dbg_logger
 
     @staticmethod    
     def valid_coord(c, size):
@@ -169,16 +169,10 @@ class Utils(object):
             return False
           
     @staticmethod  
-    def print_influence(g):
-        
-        for row in range(g.size):
-            for col in range(g.size):
-                if g[col,row].i > 0:
-                    sys.stdout.write("+")
-                elif g[col,row].i < 0:
-                    sys.stdout.write("-")
-                else:
-                    sys.stdout.write(" ")
+    def show_influence(g):
+        for row in range(1, g.size + 1):
+            for col in range(1, g.size + 1):
+                Utils.logger.log_console(str(g[col,row].i) + " ")
             sys.stdout.write("\n")
             
     @staticmethod
@@ -200,9 +194,13 @@ class Utils(object):
         for k in itertools.product(range(-3, 3), repeat=2):
             mat[k] = Utils.influence_propogation(k)
             
+        for k in mat.keys():
+            print( str(k) + " :: " + str(mat[k]))    
+        print("tot: " +  str(len(mat.keys())))
+        
         # foreach square in board
-        for row in range(b.size):
-            for col in range(b.size):
+        for row in range(1, b.size + 1):
+            for col in range(1, b.size + 1):
                 modifier =  1
                 if b[col,row].colour == 2:
                     modifier = -1
@@ -212,7 +210,7 @@ class Utils(object):
                 # foreach square we apply influence to from here ...
                 for dP in mat.keys():
                     p = (col + dP[0], row + dP[1])
-                    
-                    if Utils.valid_coord(p, b.size):
+                    #print(str(p) + " :: " + str(mat[dP]))
+                    if Utils.valid_coord(p, b.size):   
                         b[p].i += modifier * mat[dP]
     
