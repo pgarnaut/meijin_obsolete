@@ -191,7 +191,7 @@ class Utils(object):
         
         # the directions/distances and strength of propagation        
         mat = dict()
-        for k in itertools.product(range(-3, 3), repeat=2):
+        for k in itertools.product(range(-2, 3), repeat=2):
             mat[k] = Utils.influence_propogation(k)
         
         # foreach square in board
