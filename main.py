@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
         
     # create players
-    p1 = (Human(1) if do_human else Player(1))
+    p1 = (Monkey(1) if do_human else Player(1))
     p2 = Monkey(2) # AI - can do play_move() and gen_move()
     p1.logger = logger
     p2.logger = logger

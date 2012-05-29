@@ -193,10 +193,6 @@ class Utils(object):
         mat = dict()
         for k in itertools.product(range(-3, 3), repeat=2):
             mat[k] = Utils.influence_propogation(k)
-            
-        for k in mat.keys():
-            print( str(k) + " :: " + str(mat[k]))    
-        print("tot: " +  str(len(mat.keys())))
         
         # foreach square in board
         for row in range(1, b.size + 1):
@@ -210,7 +206,6 @@ class Utils(object):
                 # foreach square we apply influence to from here ...
                 for dP in mat.keys():
                     p = (col + dP[0], row + dP[1])
-                    #print(str(p) + " :: " + str(mat[dP]))
                     if Utils.valid_coord(p, b.size):   
                         b[p].i += modifier * mat[dP]
     

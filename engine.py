@@ -3,6 +3,7 @@ Implements the GTP commands and stores the state of the game.
 '''
 import sys
 from utils import Utils
+from visualise import Visualise
 
 class Move(object):
     def __init__(self, p, c, caps):
@@ -31,7 +32,8 @@ class Engine(object):
         self._captures = [0, 0] 
         # list of Move objects
         self._moves = []
-        
+        # visualisation utilities
+        self._vis = None
    
     # ---------------------------
     # gtp interface functions
@@ -91,10 +93,15 @@ class Engine(object):
         
         self._players[0].play(vertex, colour)
         self._players[1].play(vertex, colour)
-        
+ 
     
     def show_influence(self):
         return Utils.show_influence(self._board)
+    
+    def vis_influence(self):
+        if self._vis is None:
+            self._vis = Visualise()
+        self._vis.visualise_influence(self._board, 0)
     
     def quit(self):
         sys.exit(0)
