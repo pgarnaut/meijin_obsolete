@@ -7,7 +7,7 @@ import sys
 from player import Player
 from utils import Utils
 
-import itertools, math, collections
+import itertools, math, random
 
 class Human(Player):
     def __init__(self, colour):
@@ -55,56 +55,67 @@ class Monkey(Player):
                ((s-(size-1), 1), (s,size)),
                ((s-(size-1), s-(size-1)), (s, s))
         ]
-
-        blobs = [ Blob(), Blob(), Blob(), Blob() ]
         
         # TODO: not sure if there is a more succinct way to do this:
-        sq_idx = 0
+        # yank each coordinate within the blob
         for sq in dims:
+            blob = []
             top_left = sq[0]
             bottom_right = sq[1]
             for col in range(top_left[0], bottom_right[0] + 1):
                 for row in range(top_left[1], bottom_right[1] + 1):
-                    blobs[sq_idx].coords.append((col,row))
-                    print((col,row))
-            sq_idx += 1 # next quadrant
-        return blobs 
+                    blob.append((col,row))
+            yield blob
 
-    def quads_to_influence(self, blobs):
-        ''' return 4 element tuple of influence delta in quadrants. '''
-        inf = [[0,0], [0,0], [0,0], [0,0]]
-        blob_idx = 0
-        board = self._engine.board
+    def influence_in_blob(self, blob):
+        ''' return total influence value over a blob of coordinates. '''
+        inf = 0
+        for coord in blob:
+            inf += self._engine.board[coord].i
         
-        for blob in blobs:
-            for sq in blob.coords:
-                if board[sq].colour != 3:
-                    inf[blob_idx][board[sq].colour - 1] += board[sq].i
-            blob_idx += 1
-        
-        for blob in inf:
-            print(blob)
-
         return inf
 
     def empty_quads(self, inf):
         pass
+        
 
     def genmove(self):
         b = self.engine.board
         size = b.size
-        empty = []
         
-        blobs = self.corners(b)
-        deltas = self.quads_to_influence(blobs)
+        # check the corner blobs
+        for blob in self.corners(b, 3):
+            influence = self.influence_in_blob(blob)
+            dominator = (1 if influence > 0 else 2)
+            
+            # enemy dominates it
+            if dominator != self._colour:
+                for coord in blob:
+                    if b[coord].colour == 3 and Utils.check_move(b, coord, self.colour, []):
+                        return coord
+               
+            # no one owns it yet    
+            elif influence == 0:
+                random.shuffle(blob)
+                blob.sort()
+                return blob[int(len(blob)/2)]
+            
+            # I dominate it ...
+            else:   
+                pass
         
-        for c in range(1, size+1):
-            for r in range(1, size+1):
-                if b[c,r].colour == 3:
-                    empty.append((c,r))
+        # nothing to do at the corners ...
+        
+        possible = [k for k in itertools.product(range(1, size+1), repeat=2) if b[k].colour == 3]
+        random.shuffle(possible)
                     
-        for p in empty:
-            if Utils.check_move(b, p, self.colour, []):
-                return p   
+        last_valid = None
+        for v in possible:
+            if Utils.check_move(b, v, self.colour, []):   
+                last_valid = v  
+                if random.choice(range(10)) == 1:
+                    break
+            
+        return last_valid
                 
         
